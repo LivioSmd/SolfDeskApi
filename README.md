@@ -5,6 +5,7 @@ SoftDesk, a publisher of collaboration software, has decided to release an appli
 
 1. Clonez le dépôt :
 ```
+https://github.com/LivioSmd/SolfDeskApi.git
 ```
 2. Créez un nouvel environnement virtuel (venv), depuis le projet:
 ```
