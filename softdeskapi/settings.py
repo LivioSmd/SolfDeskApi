@@ -40,8 +40,16 @@ INSTALLED_APPS = [
 
     # ajout de Django REST Framework et notre application
     'rest_framework',
+    'rest_framework_simplejwt',
     'api',
 ]
+
+# Paramètres d'authentification JWT
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+}
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
