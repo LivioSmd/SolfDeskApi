@@ -1,12 +1,11 @@
 from rest_framework import serializers
 from .models import Project, Contributor, Issue, Comment
 from users.serializers import UserSerializer
-
 from users.models import User
 
 
 class ContributorDetailSerializer(serializers.ModelSerializer):
-    user = UserSerializer()  # Accepte un ID d'utilisateur
+    user = UserSerializer()  # Accepts a user ID
 
     class Meta:
         model = Contributor
@@ -21,7 +20,7 @@ class ContributorListSerializer(serializers.ModelSerializer):
 
 class CommentDetailSerializer(serializers.ModelSerializer):
     author = serializers.StringRelatedField()
-    project = serializers.StringRelatedField()  # renvoie seulement le __str__() / Sérialiser le projet (si nécessaire)
+    project = serializers.StringRelatedField()  # returns only the __str__() / Serialize project (if necessary)
 
     class Meta:
         model = Comment

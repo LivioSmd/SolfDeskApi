@@ -4,7 +4,7 @@ from rest_framework_nested import routers
 
 from .views import ProjectViewSet, ContributorViewSet, IssueViewSet, CommentViewSet
 
-# Creation d'un routeur
+# Creating a router
 router = DefaultRouter()
 router.register(r'projects', ProjectViewSet, basename='projects')
 # /projects/
@@ -28,13 +28,3 @@ urlpatterns = [
     path('', include(project_router.urls)),
     path('', include(issue_router.urls)),
 ]
-
-"""
-path('projects/<int:pk>/issues/', IssueViewSet.as_view({'get': 'list', 'post': 'create'}), name='project_issues'),
-path('projects/<int:pk>/issues/<int:issue_pk>/', IssueViewSet.as_view({'get': 'retrieve'}),
-     name='project_issue_detail'),
-path('projects/<int:pk>/issues/<int:issue_pk>/comments/', CommentViewSet.as_view({'get': 'list', 'post': 'create'}),
-     name='project_issues_comments'),
-path('projects/<int:pk>/issues/<int:issue_pk>/comments/<int:comment_pk>/',
-     CommentViewSet.as_view({'get': 'retrieve'}), name='project_issues_comments_detail'),
-"""

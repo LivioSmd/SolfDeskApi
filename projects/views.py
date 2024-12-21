@@ -2,6 +2,7 @@ from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from .models import Project, Contributor, Issue, Comment
+from .permissions import ProjectPermission, InsideProjectPermission
 from .serializers import ProjectListSerializer, ProjectDetailSerializer, ContributorListSerializer, \
     ContributorDetailSerializer, IssueListSerializer, \
     IssueDetailSerializer, CommentListSerializer, CommentDetailSerializer
@@ -13,18 +14,18 @@ class ProjectViewSet(viewsets.ModelViewSet):
     detail_serializer_class = ProjectDetailSerializer
 
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ProjectPermission]
 
     def get_queryset(self):
-        project_pk = self.kwargs.get('project_pk')  # Utilisez project_pk pour le nested router
+        project_pk = self.kwargs.get('project_pk')  # Use project_pk for the nested router
         if project_pk:
             return Project.objects.filter(pk=project_pk)
-        return Project.objects.all()  # Retourne tous les projets si project_id vide
+        return Project.objects.all()  # Returns all projects if project_id is empty
 
     def perform_create(self, serializer):
         project = serializer.save()
 
-        # Ajoutez l'utilisateur connecté comme contributeur avec le rôle 'Owner'
+        # Add the logged-in user as a contributor with the 'Owner' role
         Contributor.objects.create(user=self.request.user, project=project, role='Owner')
 
 
@@ -33,27 +34,26 @@ class ContributorViewSet(viewsets.ModelViewSet):
     detail_serializer_class = ContributorDetailSerializer
 
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, InsideProjectPermission]
 
     def get_queryset(self):
-        project_pk = self.kwargs.get('project_pk')  # Utilisez project_pk pour le nested router
-        contributor_pk = self.kwargs.get('pk')  # Utilisez project_pk pour le nested router
+        project_pk = self.kwargs.get('project_pk')
+        contributor_pk = self.kwargs.get('pk')
         if contributor_pk:
             return Contributor.objects.filter(project_id=project_pk, pk=contributor_pk)
-        return Contributor.objects.filter(
-            project_id=project_pk).all()  # Retourne tous les contributors si contributor_pk vide
+        return Contributor.objects.filter(project_id=project_pk).all()
 
     def perform_create(self, serializer):
         project = Project.objects.get(id=self.kwargs['project_pk'])
         user_id = self.request.data.get('user')
         user = User.objects.get(id=user_id)
 
-        # Vérifiez si cet utilisateur est déjà contributeur
+        # Check if this user is already a contributor
         if Contributor.objects.filter(user=user, project=project).exists():
             raise Exception("This user is already a contributor for this project.")
 
-        # Enregistrer le contributeur avec le rôle spécifié ou un rôle par défaut
-        role = self.request.data.get('role', 'Dev')  # Si aucun rôle n'est spécifié, utiliser 'Dev'
+        # Register the contributor with the specified role or a default role
+        role = self.request.data.get('role', 'Dev')  # If no role is specified, use 'Dev'.
         serializer.save(user=user, project=project, role=role)
 
 
@@ -62,30 +62,30 @@ class IssueViewSet(viewsets.ModelViewSet):
     detail_serializer_class = IssueDetailSerializer
 
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, InsideProjectPermission]
 
     def get_queryset(self):
-        project_pk = self.kwargs.get('project_pk')  # Utilisez project_pk pour le nested router
-        issue_pk = self.kwargs.get('pk')  # Utilisez project_pk pour le nested router
+        project_pk = self.kwargs.get('project_pk')
+        issue_pk = self.kwargs.get('pk')
         if issue_pk:
             return Issue.objects.filter(project_id=project_pk, pk=issue_pk)
         return Issue.objects.filter(project_id=project_pk).all()
 
     def perform_create(self, serializer):
-        project_pk = self.kwargs.get('project_pk')  # Utilisez project_pk pour le nested router
+        project_pk = self.kwargs.get('project_pk')
         assigned_user = self.request.data.get('assigned_user')
 
-        # Récupérer le contributeur auteur de l'issue
+        # Retrieve the contributor who created the issue
         author = Contributor.objects.get(user=self.request.user, project_id=project_pk)
 
-        # Vérifier si un utilisateur assigné est spécifié
+        # Check if an assigned user is specified
         if assigned_user:
             assigned_contributor = Contributor.objects.get(user_id=assigned_user, project_id=project_pk)
         else:
-            # Si aucun utilisateur n'est assigné, l'auteur devient l'utilisateur assigné
+            # If no user is assigned, the author becomes the assigned user
             assigned_contributor = author
 
-        # Sauvegarder l'instance
+        # Save instance
         serializer.save(
             project_id=project_pk,
             author=author,
@@ -98,12 +98,12 @@ class CommentViewSet(viewsets.ModelViewSet):
     detail_serializer_class = CommentDetailSerializer
 
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, InsideProjectPermission]
 
     def get_queryset(self):
-        project_pk = self.kwargs.get('project_pk')  # Utilisez project_pk pour le nested router
-        issue_pk = self.kwargs.get('issue_pk')  # Utilisez project_pk pour le nested router
-        comment_pk = self.kwargs.get('pk')  # Utilisez project_pk pour le nested router
+        project_pk = self.kwargs.get('project_pk')
+        issue_pk = self.kwargs.get('issue_pk')
+        comment_pk = self.kwargs.get('pk')
         if comment_pk:
             return Comment.objects.filter(project_id=project_pk, issue_id=issue_pk, pk=comment_pk)
         return Comment.objects.filter(project_id=project_pk, issue_id=issue_pk).all()
