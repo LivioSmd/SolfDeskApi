@@ -11,7 +11,7 @@ class UserSerializer(serializers.ModelSerializer):
                   'can_be_contacted', 'can_data_be_shared', 'date_created',
                   'date_updated', 'password']
 
-        # write_only permet de ne pas afficher le password dans les reponses
+        # write_only does not display the password in responses
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
