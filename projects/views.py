@@ -22,6 +22,11 @@ class ProjectViewSet(viewsets.ModelViewSet):
             return Project.objects.filter(pk=project_pk)
         return Project.objects.all()  # Returns all projects if project_id is empty
 
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return self.detail_serializer_class
+        return super().get_serializer_class()
+
     def perform_create(self, serializer):
         project = serializer.save()
 
@@ -42,6 +47,11 @@ class ContributorViewSet(viewsets.ModelViewSet):
         if contributor_pk:
             return Contributor.objects.filter(project_id=project_pk, pk=contributor_pk)
         return Contributor.objects.filter(project_id=project_pk).all()
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return self.detail_serializer_class
+        return super().get_serializer_class()
 
     def perform_create(self, serializer):
         project = Project.objects.get(id=self.kwargs['project_pk'])
@@ -70,6 +80,11 @@ class IssueViewSet(viewsets.ModelViewSet):
         if issue_pk:
             return Issue.objects.filter(project_id=project_pk, pk=issue_pk)
         return Issue.objects.filter(project_id=project_pk).all()
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return self.detail_serializer_class
+        return super().get_serializer_class()
 
     def perform_create(self, serializer):
         project_pk = self.kwargs.get('project_pk')
@@ -107,6 +122,11 @@ class CommentViewSet(viewsets.ModelViewSet):
         if comment_pk:
             return Comment.objects.filter(project_id=project_pk, issue_id=issue_pk, pk=comment_pk)
         return Comment.objects.filter(project_id=project_pk, issue_id=issue_pk).all()
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return self.detail_serializer_class
+        return super().get_serializer_class()
 
     def perform_create(self, serializer):
         issue = Issue.objects.get(id=self.kwargs.get('issue_pk'))
